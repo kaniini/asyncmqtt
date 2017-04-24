@@ -1,3 +1,5 @@
+import random
+
 from asyncmqtt import MQTTException
 
 
@@ -27,3 +29,7 @@ def decode_string(data: bytes) -> str:
         return ''
 
     return data[2:2 + data_len].decode('utf-8')
+
+
+def gen_client_id() -> str:
+    return 'asyncmqtt/' + ''.join(format(random.randint(0, 256), '02x') for i in range(10))
