@@ -1,5 +1,6 @@
 import struct
 import asyncio
+from datetime import datetime
 
 
 RESERVED_0 = 0x00
@@ -102,7 +103,7 @@ class MQTTFixedHeader:
 
 
 class MQTTVariableHeader:
-    def to_bytes(self):
+    def to_bytes(self) -> bytes:
         """Marshal header data to bytes."""
         raise NotImplementedError()
 
@@ -128,3 +129,61 @@ class MQTTPayload:
         if needle > len(buffer):
             raise MQTTException('packet truncated')
         return cls(buffer[needle:])
+
+
+class MQTTPacket:
+    FIXED_HEADER = MQTTFixedHeader
+    VARIABLE_HEADER = None
+    PAYLOAD = None
+
+    def __init__(self, fixed: MQTTFixedHeader, variable_header: MQTTVariableHeader=None, payload: MQTTPayload=None):
+        self.fixed_header = fixed
+        self.variable_header = variable_header
+        self.payload = payload
+        self.protocol_ts = None
+
+    def to_bytes(self) -> bytes:
+        if self.variable_header:
+            variable_header_bytes = self.variable_header.to_bytes()
+        else:
+            variable_header_bytes = b''
+        if self.payload:
+            payload_bytes = self.payload.to_bytes(self.fixed_header, self.variable_header)
+        else:
+            payload_bytes = b''
+
+        self.fixed_header.remaining_length = len(variable_header_bytes) + len(payload_bytes)
+        fixed_header_bytes = self.fixed_header.to_bytes()
+
+        return fixed_header_bytes + variable_header_bytes + payload_bytes
+
+    @property
+    def bytes_length(self):
+        return len(self.to_bytes())
+
+    @classmethod
+    def from_bytes(cls, buffer: bytearray):
+        needle = 0
+        fixed_header = variable_header = payload = None
+        if cls.FIXED_HEADER:
+            fixed_header = cls.FIXED_HEADER.from_bytes(buffer)
+        needle += fixed_header.bytes_length
+        if cls.VARIABLE_HEADER:
+            variable_header = cls.VARIABLE_HEADER.from_bytes(buffer[needle:])
+        if variable_header:
+            needle += variable_header.bytes_length
+        if cls.PAYLOAD:
+            payload = cls.PAYLOAD.from_bytes(buffer[needle:])
+
+        if fixed_header and not variable_header and not payload:
+            instance = cls(fixed_header)
+        elif fixed_header and variable_header and not payload:
+            instance = cls(fixed_header, variable_header)
+        else:
+            instance = cls(fixed_header, variable_header, payload)
+
+        instance.protocol_ts = datetime.now()
+        return instance
+
+    def __repr__(self):
+        return type(self).__name__ + ('(ts=%r, fixed=%r, variable=%r, payload=%r)' % (self.protocol_ts, self.fixed_header, self.variable_header, self.payload))
