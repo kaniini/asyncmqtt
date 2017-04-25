@@ -140,7 +140,7 @@ class MQTTPayload:
     @classmethod
     def from_bytes(cls, buffer: bytearray, fixed_header: MQTTFixedHeader, variable_header: MQTTVariableHeader):
         """Demarshal payload data from bytes.  In most cases, the default implementation is adequate."""
-        return cls(buffer[needle:])
+        return cls(buffer)
 
 
 class MQTTPacket:
