@@ -55,6 +55,9 @@ class MQTTClientProtocol(asyncio.Protocol):
                 return
 
             msgsize = fixed.bytes_length + fixed.remaining_length
+            if msgsize > len(self.buffer):
+                return
+
             workbuf = self.buffer[:msgsize]
             self.buffer = self.buffer[msgsize:]
 
