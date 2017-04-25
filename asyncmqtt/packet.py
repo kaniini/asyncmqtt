@@ -90,16 +90,15 @@ class MQTTFixedHeader:
 
             return value
 
-        int1 = struct.unpack('!B', buffer[0:1])
-        msg_type = (int1[0] & 0xf0) >> 4
-        flags = int1[0] & 0x0f
+        msg_type = (buffer[0] & 0xf0) >> 4
+        flags = buffer[0] & 0x0f
         remain_length = decode_remaining_length(buffer[1:])
 
         return cls(msg_type, flags, remain_length)
 
     def __repr__(self):
-        return type(self).__name__ + '(length={0}, flags={1})'.\
-            format(self.remaining_length, hex(self.flags))
+        return type(self).__name__ + '(packet_type={2}, length={0}, flags={1})'.\
+            format(self.remaining_length, hex(self.flags), hex(self.packet_type))
 
 
 class MQTTVariableHeader:
