@@ -3,6 +3,10 @@ import asyncio
 from datetime import datetime
 
 
+from asyncmqtt import MQTTException
+from asyncmqtt.util import int_to_bytes, bytes_to_int
+
+
 RESERVED_0 = 0x00
 CONNECT = 0x01
 CONNACK = 0x02
@@ -19,10 +23,6 @@ PINGREQ = 0x0c
 PINGRESP = 0x0d
 DISCONNECT = 0x0e
 RESERVED_15 = 0x0f
-
-
-class MQTTException(ValueError):
-    pass
 
 
 class MQTTFixedHeader:

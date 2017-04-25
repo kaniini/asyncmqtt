@@ -1,1 +1,2 @@
-from asyncmqtt.packet import MQTTException
+class MQTTException(ValueError):
+    pass
