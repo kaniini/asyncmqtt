@@ -139,9 +139,6 @@ class MQTTPayload:
     @classmethod
     def from_bytes(cls, buffer: bytearray, fixed_header: MQTTFixedHeader, variable_header: MQTTVariableHeader):
         """Demarshal payload data from bytes.  In most cases, the default implementation is adequate."""
-        needle = fixed_header.bytes_length + variable_header.bytes_length
-        if needle > len(buffer):
-            raise MQTTException('packet truncated')
         return cls(buffer[needle:])
 
 
