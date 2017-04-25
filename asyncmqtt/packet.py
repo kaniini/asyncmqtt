@@ -117,7 +117,7 @@ class MQTTVariableHeader:
         raise NotImplementedError()
 
 
-class PacketIDVariableHeader:
+class PacketIDVariableHeader(MQTTVariableHeader):
     def __init__(self, packet_id=0):
         self.packet_id = packet_id
 
@@ -127,8 +127,9 @@ class PacketIDVariableHeader:
     def to_bytes(self) -> bytes:
         return int_to_bytes(self.packet_id, 2)
 
+    @classmethod
     def from_bytes(cls, buffer: bytearray, fixed_header: MQTTFixedHeader):
-        return cls(bytes_to_int(buffer))
+        return cls(bytes_to_int(buffer[0:2]))
 
 
 class MQTTPayload:
