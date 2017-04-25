@@ -112,7 +112,7 @@ class MQTTVariableHeader:
         return len(self.to_bytes())
 
     @classmethod
-    def from_bytes(cls, buffer: bytearray):
+    def from_bytes(cls, buffer: bytearray, fixed_header: MQTTFixedHeader):
         """Demarshal header data from bytes."""
         raise NotImplementedError()
 
@@ -169,11 +169,11 @@ class MQTTPacket:
             fixed_header = cls.FIXED_HEADER.from_bytes(buffer)
         needle += fixed_header.bytes_length
         if cls.VARIABLE_HEADER:
-            variable_header = cls.VARIABLE_HEADER.from_bytes(buffer[needle:])
+            variable_header = cls.VARIABLE_HEADER.from_bytes(buffer[needle:], fixed_header)
         if variable_header:
             needle += variable_header.bytes_length
-        if cls.PAYLOAD:
-            payload = cls.PAYLOAD.from_bytes(buffer[needle:])
+            if cls.PAYLOAD:
+                payload = cls.PAYLOAD.from_bytes(buffer[needle:], fixed_header, variable_header)
 
         if fixed_header and not variable_header and not payload:
             instance = cls(fixed_header)
