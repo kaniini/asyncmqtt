@@ -42,6 +42,9 @@ class MQTTClientProtocol(asyncio.Protocol):
         self.buffer.extend(data)
         self.decode_buffer()
 
+    def message_received(self, message):
+        self.msgq.put_nowait(message)
+
     def decode_buffer(self):
         global PACKET_TYPES
 
@@ -60,7 +63,7 @@ class MQTTClientProtocol(asyncio.Protocol):
                 print('Undefined handler for packet type %x' % fixed.packet_type)
 
             packet = ptcons.from_bytes(workbuf)
-            self.msgq.put_nowait(packet)
+            self.message_received(packet)
 
     def connect(self, username: str=None, password: str=None):
         cp = ConnectPacket()
