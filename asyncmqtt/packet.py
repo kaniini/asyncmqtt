@@ -117,6 +117,20 @@ class MQTTVariableHeader:
         raise NotImplementedError()
 
 
+class PacketIDVariableHeader:
+    def __init__(self, packet_id=0):
+        self.packet_id = packet_id
+
+    def __repr__(self):
+        return 'PacketIDVariableHeader(packet_id=%d)' % self.packet_id
+
+    def to_bytes(self) -> bytes:
+        return int_to_bytes(self.packet_id, 2)
+
+    def from_bytes(cls, buffer: bytearray, fixed_header: MQTTFixedHeader):
+        return cls(bytes_to_int(buffer))
+
+
 class MQTTPayload:
     def to_bytes(self):
         """Marshal payload data to bytes."""
